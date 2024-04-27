@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Котики и миска</title>
+	</head>
+	<body>
+		<h1>Котики и миска</h1>
+		<form>
+			<label for="num-cats">Количество котиков:</label>
+			<input type="number" id="num-cats" min="1" required />
+			<br />
+			<label for="cat-appetite">Сколько корма нужно котику:</label>
+			<input type="number" id="cat-appetite" min="1" required />
+			<br />
+			<label for="bowl-capacity">Вместимость миски:</label>
+			<input type="number" id="bowl-capacity" min="1" required />
+			<br />
+			<label for="eat-time">Время, необходимое котику на поедание:</label>
+			<input type="number" id="eat-time" min="1" required />
+			<br />
+			<label for="refill-time"
+				>Время, необходимое бабушке на наполнение миски:</label
+			>
+			<input type="number" id="refill-time" min="1" required />
+			<br />
+			<input type="submit" value="Запустить" />
+		</form>
+		<br />
+		<div id="output"></div>
+
+		<script>
+			document.addEventListener('DOMContentLoaded', () => {
+				const form = document.querySelector('form')
+				const output = document.getElementById('output')
+
+				form.addEventListener('submit', event => {
+					event.preventDefault()
+
+					// Получаем значения из формы
+					const numCats = parseInt(document.getElementById('num-cats').value)
+					const catAppetite = parseInt(
+						document.getElementById('cat-appetite').value
+					)
+					const bowlCapacity = parseInt(
+						document.getElementById('bowl-capacity').value
+					)
+					const eatTime = parseInt(document.getElementById('eat-time').value)
+					const refillTime = parseInt(
+						document.getElementById('refill-time').value
+					)
+
+					// Инициализируем переменные
+					let bowlContent = bowlCapacity
+					let totalTime = 0
+					let catsWaiting = []
+					let isBowlEmpty = false
+					let isGrandmaRefilling = false
+
+					// Функция, имитирующая процесс кормления
+					const startFeeding = () => {
+						// Если есть голодный кот и миска не пуста, накормим его
+						if (catsWaiting.length > 0 && bowlContent > 0) {
+							const catNumber = catsWaiting[0]
+							output.innerHTML += `<p>Котик под номером ${catNumber} подошел к миске</p>`
+
+							// Запускаем таймер на поедание
+							setTimeout(() => {
+								// Кот поел, освобождаем миску и кота
+								bowlContent -= catAppetite
+								catsWaiting.shift()
+								output.innerHTML += `<p>Котик под номером ${catNumber} отошел от миски</p>`
+
+								// Проверяем, есть ли еще голодные коты
+								startFeeding()
+							}, eatTime * 1000)
+						} else if (bowlContent - catAppetite <= 0 && !isGrandmaRefilling) {
+							// Миска пуста, запускаем таймер на наполнение
+							isGrandmaRefilling = true
+							totalTime += refillTime
+							output.innerHTML += `<p>Бабушка наполняет миску</p>`
+
+							setTimeout(() => {
+								// Миска наполнена, сбрасываем флаг и продолжаем кормить котов
+								isBowlEmpty = false
+								isGrandmaRefilling = false
+								bowlContent = bowlCapacity
+								startFeeding()
+							}, refillTime * 1000)
+						} else if (catsWaiting.length === 0) {
+							// Все коты накормлены, выводим общее время
+							output.innerHTML += `<p>Все котики накормлены. Общее время: ${totalTime} секунд</p>`
+						}
+					}
+
+					// Инициируем очередь голодных котов
+					for (let i = 1; i <= numCats; i++) {
+						catsWaiting.push(i)
+					}
+
+					// Начинаем процесс кормления
+					startFeeding()
+				})
+			})
+		</script>
+	</body>
+</html>
